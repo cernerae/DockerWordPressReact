@@ -11,7 +11,7 @@ services:
       - MYSQL_USER=${MYSQL_USER:-myuser}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD:-password123}
     volumes:
-      - /c/docker_volumes/var/lib/mysql:/var/lib/mysql
+      - ${MYSQL_HOST_VOLUME:-/c/docker_volumes/var/lib/mysql}:/var/lib/mysql
     command: "--default-authentication-plugin=mysql_native_password"
     networks:
       - app-network
@@ -28,7 +28,7 @@ services:
       - WORDPRESS_DB_PASSWORD=${MYSQL_PASSWORD:-password123}
       - WORDPRESS_DB_NAME=wordpress
     volumes:
-      - /c/docker_volumes/var/www/html:/var/www/html
+      - ${WORDPRESS_HOST_VOLUME:-/c/docker_volumes/var/www/html}:/var/www/html
     networks:
       - app-network
 
@@ -43,7 +43,7 @@ services:
     ports:
       - 80:80
     volumes:
-      - /c/docker_volumes/var/www/html:/var/www/html
+      - ${WORDPRESS_HOST_VOLUME:-/c/docker_volumes/var/www/html}:/var/www/html
     depends_on:
       - database
       - wordpress
