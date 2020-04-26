@@ -1,0 +1,55 @@
+version: "3.2"
+
+services:
+  database:
+    image: mysql:5.7
+    container_name: database-cont
+    restart: unless-stopped
+    environment:
+      - MYSQL_DATABASE=${MYSQL_DATABASE:-wordpress}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-password123}
+      - MYSQL_USER=${MYSQL_USER:-myuser}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD:-password123}
+    volumes:
+      - ${MYSQL_HOST_VOLUME:-/c/docker_volumes/var/lib/mysql}:/var/lib/mysql
+    command: "--default-authentication-plugin=mysql_native_password"
+    networks:
+      - app-network
+
+  wordpress:
+    depends_on:
+      - database
+    image: wordpress:5.3.2-fpm-alpine
+    container_name: wordpress-cont
+    restart: unless-stopped
+    environment:
+      - WORDPRESS_DB_HOST=database:3306
+      - WORDPRESS_DB_USER=${MYSQL_USER:-myuser}
+      - WORDPRESS_DB_PASSWORD=${MYSQL_PASSWORD:-password123}
+      - WORDPRESS_DB_NAME=wordpress
+    volumes:
+      - ${WORDPRESS_HOST_VOLUME:-/c/docker_volumes/var/www/html}:/var/www/html
+    networks:
+      - app-network
+
+  nginx:
+    build:
+      context: ./web_server
+      dockerfile: Dockerfile
+      args:
+        react_dir: ${REACT_PROJECT_DIR:-reactapp}
+    container_name: nginx-cont
+    restart: unless-stopped
+    ports:
+      - 80:80
+    volumes:
+      - ${WORDPRESS_HOST_VOLUME:-/c/docker_volumes/var/www/html}:/var/www/html
+    depends_on:
+      - database
+      - wordpress
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
