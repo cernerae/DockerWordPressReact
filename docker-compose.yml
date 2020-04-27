@@ -45,7 +45,6 @@ services:
     volumes:
       - ${WORDPRESS_HOST_VOLUME:-/c/docker_volumes/var/www/html}:/var/www/html
     depends_on:
-      - database
       - wordpress
     networks:
       - app-network
